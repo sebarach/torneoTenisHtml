@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- SweetAlert2 CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.3/sweetalert2.min.css" />
     <title>Torneo de Tenis</title>
     <style>
       body {
@@ -226,5 +230,44 @@
 
     <!-- Cargar el script al final para que el DOM esté listo -->
     <script src="script.js"></script>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.3/sweetalert2.all.min.js"></script>
+    <script>
+      // Seleccionar todos los elementos con la clase match-card
+      document.querySelectorAll(".match-card").forEach((card) => {
+        card.addEventListener("click", function () {
+          // Obtener los datos del partido desde los atributos de datos
+          const partidoId = this.getAttribute("data-partido-id");
+          const grupo = this.getAttribute("data-grupo");
+          const semana = this.getAttribute("data-semana");
+          const player1Id = this.getAttribute("data-player1-id");
+          const player2Id = this.getAttribute("data-player2-id");
+
+          // Obtener los nombres de los jugadores
+          const playerNames = this.querySelectorAll(".player-name");
+          const player1Name = playerNames[0].textContent;
+          const player2Name = playerNames[1].textContent;
+
+          // Mostrar SweetAlert con los detalles del partido
+          Swal.fire({
+            title: `Partido #${partidoId}`,
+            html: `
+                        <p><strong>Grupo:</strong> ${grupo}</p>
+                        <p><strong>Semana:</strong> ${semana}</p>
+                        <p><strong>Jugadores:</strong></p>
+                        <div>
+                            <span>${player1Name} (ID: ${player1Id})</span>
+                            <br>
+                            <span>vs</span>
+                            <br>
+                            <span>${player2Name} (ID: ${player2Id})</span>
+                        </div>
+                    `,
+            icon: "info",
+            confirmButtonText: "Cerrar",
+          });
+        });
+      });
+    </script>
   </body>
 </html>

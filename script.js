@@ -4,6 +4,7 @@ const SUPABASE_CLIENT_ANON_KEY =
 const SUPABASE_URL = "https://mujaroivapqkofghcvcq.supabase.co";
 const ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11amFyb2l2YXBxa29mZ2hjdmNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM4ODM4MjYsImV4cCI6MjA1OTQ1OTgyNn0.-m1mMV0ehAJO3saN0wSwtMzZElkE-iOLpy6tvMLvc5E";
+
 // Función para obtener los jugadores desde Supabase
 async function getPlayers() {
   try {
@@ -397,8 +398,31 @@ function displayMatches(players, partidos, torneos) {
         matchCard.appendChild(idBadge);
         matchesGrid.appendChild(matchCard);
 
+        // matchCard.addEventListener("click", function () {
+        //   console.log(`Partido #${match.partidoId} seleccionado`);
+        // });
         matchCard.addEventListener("click", function () {
-          console.log(`Partido #${match.partidoId} seleccionado`);
+          const player1Name = getPlayerNameById(match.player1, players);
+          const player2Name = getPlayerNameById(match.player2, players);
+          const resultado = match.resultado
+            ? match.resultado
+            : "Sin resultado registrado";
+          const ganador = match.ganador
+            ? getPlayerNameById(match.ganador, players)
+            : "Por definir";
+
+          Swal.fire({
+            title: `Partido #${match.partidoId}`,
+            html: `
+                <strong>Grupo:</strong> ${match.group}<br>
+                <strong>Semana:</strong> ${weekNumber}<br><br>
+                <strong>${player1Name}</strong> vs <strong>${player2Name}</strong><br><br>
+                <strong>Resultado:</strong> ${resultado}<br>
+                <strong>Ganador:</strong> ${ganador}
+              `,
+            icon: "info",
+            confirmButtonText: "Cerrar",
+          });
         });
       });
     }
