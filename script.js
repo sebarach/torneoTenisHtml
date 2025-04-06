@@ -240,7 +240,7 @@ function displayPlayerGroups(players, partidos, torneos) {
         const matchesLost = matchesPlayed - matchesWon;
 
         // Calcular puntos (2 por victoria, 0 por derrota)
-        const points = matchesWon * 2;
+        const points = matchesWon * 3;
 
         return {
           ...player,
@@ -353,6 +353,16 @@ function displayMatches(players, partidos, torneos) {
         const matchCard = document.createElement("div");
         matchCard.className = "match-card";
 
+        // Asignar el ID del partido como atributo de datos y como ID del elemento
+        matchCard.id = `partido-${match.partidoId}`;
+        matchCard.dataset.partidoId = match.partidoId;
+
+        // También podemos añadir datos adicionales como atributos
+        matchCard.dataset.player1Id = match.player1;
+        matchCard.dataset.player2Id = match.player2;
+        matchCard.dataset.grupo = match.group;
+        matchCard.dataset.semana = weekNumber;
+
         const groupLabel = document.createElement("div");
         groupLabel.className = "group-label";
         groupLabel.textContent = `Grupo ${match.group}`;
@@ -360,18 +370,10 @@ function displayMatches(players, partidos, torneos) {
         const matchPlayers = document.createElement("div");
         matchPlayers.className = "match-players";
         matchPlayers.innerHTML = `
-            ${getPlayerNameById(match.player1, players)}
-            <span class="versus">vs</span>
-            ${getPlayerNameById(match.player2, players)}
-          `;
-
-        // Añadir resultado si existe
-        if (match.resultado) {
-          const resultDiv = document.createElement("div");
-          resultDiv.className = "match-result";
-          resultDiv.textContent = match.resultado;
-          matchCard.appendChild(resultDiv);
-        }
+              ${getPlayerNameById(match.player1, players)}
+              <span class="versus">vs</span>
+              ${getPlayerNameById(match.player2, players)}
+            `;
 
         // Marcar ganador si existe
         if (match.ganador) {
@@ -384,9 +386,32 @@ function displayMatches(players, partidos, torneos) {
           }
         }
 
+        // Opcionalmente, añadir un pequeño identificador visual del ID
+        const idBadge = document.createElement("div");
+        idBadge.className = "match-id-badge";
+        idBadge.textContent = `#${match.partidoId}`;
+        idBadge.style.fontSize = "0.7rem";
+        idBadge.style.color = "#999";
+        idBadge.style.textAlign = "right";
+        idBadge.style.marginTop = "5px";
+
         matchCard.appendChild(groupLabel);
+        // Añadir resultado si existe
+        if (match.resultado) {
+          const resultDiv = document.createElement("div");
+          resultDiv.className = "match-result";
+          resultDiv.textContent = match.resultado;
+          matchCard.appendChild(resultDiv);
+        }
         matchCard.appendChild(matchPlayers);
+        matchCard.appendChild(idBadge); // Agregar el badge de ID
         matchesGrid.appendChild(matchCard);
+
+        // Opcionalmente, agregar un event listener para manejar clics en los partidos
+        matchCard.addEventListener("click", function () {
+          console.log(`Partido #${match.partidoId} seleccionado`);
+          // Aquí podrías mostrar un modal para agregar el resultado, etc.
+        });
       });
     }
 
