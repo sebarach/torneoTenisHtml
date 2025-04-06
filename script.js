@@ -1,4 +1,3 @@
-// Reemplaza esto con tu clave anónima de Supabase
 const SUPABASE_CLIENT_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11amFyb2l2YXBxa29mZ2hjdmNxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0Mzg4MzgyNiwiZXhwIjoyMDU5NDU5ODI2fQ.Ux640A_yGkFd2zXDLGkyliDlE9Kgd2otAGKE22fqlTs";
 
@@ -292,39 +291,24 @@ function displayPlayerGroups(players, partidos, torneos) {
   }
 }
 
-// Función para mostrar partidos por semana
 function displayMatches(players, partidos, torneos) {
-  // Obtener la información del torneo activo
   const torneoActivo = torneos && torneos.length > 0 ? torneos[0] : null;
-  const cantidadFechas =
-    torneoActivo && torneoActivo.CantidadFechas
-      ? torneoActivo.CantidadFechas
-      : 5;
+  const cantidadFechas = torneoActivo?.CantidadFechas || 5;
 
-  // Organizar partidos por semana
   const matchesByWeek = organizeMatchesByWeek(partidos);
 
-  // Crear o actualizar los contenedores de semanas
   const weekContainersParent = document.querySelector(".container");
   const weekContainers = document.querySelectorAll(".week-container");
+  weekContainers.forEach((container) => container.remove());
 
-  // Eliminar contenedores de semana existentes
-  weekContainers.forEach((container) => {
-    container.remove();
-  });
-
-  // Crear un contenedor para las semanas
   const fechasContainer = document.createElement("div");
   fechasContainer.className = "fechas-container";
 
-  // Agregar título de sección
   const seccionPartidos = document.createElement("div");
   seccionPartidos.className = "section-title";
-  //   seccionPartidos.textContent = "Calendario de Partidos";
   weekContainersParent.appendChild(seccionPartidos);
   weekContainersParent.appendChild(fechasContainer);
 
-  // Crear secciones para cada semana según la cantidad de fechas del torneo
   for (let i = 1; i <= cantidadFechas; i++) {
     const weekNumber = i;
     const weekContainer = document.createElement("div");
@@ -337,27 +321,20 @@ function displayMatches(players, partidos, torneos) {
     const matchesGrid = document.createElement("div");
     matchesGrid.className = "matches-grid";
 
-    // Obtén los partidos para esta semana
     const weekMatches = matchesByWeek[weekNumber] || [];
 
     if (weekMatches.length === 0) {
-      // Si no hay partidos, mostrar mensaje
       const noMatchesMsg = document.createElement("div");
       noMatchesMsg.className = "no-matches";
       noMatchesMsg.textContent =
         "No hay partidos programados para esta semana.";
       matchesGrid.appendChild(noMatchesMsg);
     } else {
-      // Crea elementos para cada partido
       weekMatches.forEach((match) => {
         const matchCard = document.createElement("div");
         matchCard.className = "match-card";
-
-        // Asignar el ID del partido como atributo de datos y como ID del elemento
         matchCard.id = `partido-${match.partidoId}`;
         matchCard.dataset.partidoId = match.partidoId;
-
-        // También podemos añadir datos adicionales como atributos
         matchCard.dataset.player1Id = match.player1;
         matchCard.dataset.player2Id = match.player2;
         matchCard.dataset.grupo = match.group;
@@ -369,24 +346,36 @@ function displayMatches(players, partidos, torneos) {
 
         const matchPlayers = document.createElement("div");
         matchPlayers.className = "match-players";
-        matchPlayers.innerHTML = `
-              ${getPlayerNameById(match.player1, players)}
-              <span class="versus">vs</span>
-              ${getPlayerNameById(match.player2, players)}
-            `;
+
+        const player1Span = document.createElement("span");
+        player1Span.className = "player-name";
+        player1Span.textContent = getPlayerNameById(match.player1, players);
+
+        const vsSpan = document.createElement("span");
+        vsSpan.className = "versus";
+        vsSpan.textContent = "vs";
+
+        const player2Span = document.createElement("span");
+        player2Span.className = "player-name";
+        player2Span.textContent = getPlayerNameById(match.player2, players);
 
         // Marcar ganador si existe
         if (match.ganador) {
           matchCard.classList.add("match-completed");
-          // Destacar al ganador
+
           if (match.ganador === match.player1) {
-            matchPlayers.classList.add("player1-winner");
+            player1Span.classList.add("player-winner");
+            player2Span.classList.add("player-loser");
           } else if (match.ganador === match.player2) {
-            matchPlayers.classList.add("player2-winner");
+            player2Span.classList.add("player-winner");
+            player1Span.classList.add("player-loser");
           }
         }
 
-        // Opcionalmente, añadir un pequeño identificador visual del ID
+        matchPlayers.appendChild(player1Span);
+        matchPlayers.appendChild(vsSpan);
+        matchPlayers.appendChild(player2Span);
+
         const idBadge = document.createElement("div");
         idBadge.className = "match-id-badge";
         idBadge.textContent = `#${match.partidoId}`;
@@ -396,21 +385,20 @@ function displayMatches(players, partidos, torneos) {
         idBadge.style.marginTop = "5px";
 
         matchCard.appendChild(groupLabel);
-        // Añadir resultado si existe
+
         if (match.resultado) {
           const resultDiv = document.createElement("div");
           resultDiv.className = "match-result";
           resultDiv.textContent = match.resultado;
           matchCard.appendChild(resultDiv);
         }
+
         matchCard.appendChild(matchPlayers);
-        matchCard.appendChild(idBadge); // Agregar el badge de ID
+        matchCard.appendChild(idBadge);
         matchesGrid.appendChild(matchCard);
 
-        // Opcionalmente, agregar un event listener para manejar clics en los partidos
         matchCard.addEventListener("click", function () {
           console.log(`Partido #${match.partidoId} seleccionado`);
-          // Aquí podrías mostrar un modal para agregar el resultado, etc.
         });
       });
     }
@@ -420,7 +408,6 @@ function displayMatches(players, partidos, torneos) {
     fechasContainer.appendChild(weekContainer);
   }
 
-  // Insertar nota al final si existe
   const noteElement = document.querySelector(".note");
   if (noteElement) {
     weekContainersParent.appendChild(noteElement);
