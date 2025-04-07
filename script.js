@@ -267,8 +267,12 @@ function displayPlayerGroups(players, partidos, torneos) {
           playerRow.classList.add("position-2");
         }
 
+        // Crear un elemento span para el nombre y hacerlo clicable
+        const playerName = player.Nombre || `Jugador ID: ${player.id}`;
+        const playerTelefono = player.Telefono;
+
         playerRow.innerHTML = `
-          <td>${player.Nombre || `Jugador ID: ${player.id}`}</td>
+          <td><span class="player-name" style="cursor: pointer; color: #0066cc; text-decoration: underline;">${playerName}</span></td>
           <td><span class="stat-value">${player.stats.played}</span></td>
           <td><span class="stat-value">${player.stats.won}</span></td>
           <td><span class="stat-value">${player.stats.lost}</span></td>
@@ -276,6 +280,18 @@ function displayPlayerGroups(players, partidos, torneos) {
         `;
 
         tableBody.appendChild(playerRow);
+
+        // Añadir evento click al nombre del jugador
+        const playerNameSpan = playerRow.querySelector(".player-name");
+        playerNameSpan.addEventListener("click", function () {
+          // Mostrar SweetAlert con el ID del jugador
+          Swal.fire({
+            title: `Telefono del Jugador ${playerName}`,
+            text: `${playerTelefono ?? "Sin numero"}`,
+            icon: "info",
+            confirmButtonText: "Cerrar",
+          });
+        });
       });
 
       statsTable.appendChild(tableBody);
