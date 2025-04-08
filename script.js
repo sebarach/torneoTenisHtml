@@ -92,6 +92,64 @@ async function getPartidos() {
   }
 }
 
+// Función para actualizar el resultado de un partido en Supabase _duplicate_test
+async function updatePartidoResultado(partidoId, nuevoResultado, ganadorId) {
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/Partidos?id=eq.${partidoId}`,
+      {
+        method: "PATCH",
+        headers: {
+          apikey: ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_CLIENT_ANON_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({
+          Resultado: nuevoResultado,
+          PlayerGanador: ganadorId,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+// Función para actualizar el resultado de un partido en Supabase _duplicate_test
+async function deleteResultadoById(partidoId) {
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/Partidos_duplicate_test?id=eq.${partidoId}`,
+      {
+        method: "PATCH",
+        headers: {
+          apikey: ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_CLIENT_ANON_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({
+          Resultado: null,
+          PlayerGanador: 0,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 // Función para agrupar jugadores por grupo dinámicamente
 function groupPlayersByGroup(players, partidos, torneos) {
   // Obtener la información del torneo activo (asumiendo que es el primero si hay varios)
@@ -308,6 +366,7 @@ function displayPlayerGroups(players, partidos, torneos) {
   }
 }
 
+// Función para mostrar los partidos por semana
 function displayMatches(players, partidos, torneos) {
   const torneoActivo = torneos && torneos.length > 0 ? torneos[0] : null;
   const cantidadFechas = torneoActivo?.CantidadFechas || 5;
@@ -338,7 +397,10 @@ function displayMatches(players, partidos, torneos) {
     const matchesGrid = document.createElement("div");
     matchesGrid.className = "matches-grid";
 
-    const weekMatches = matchesByWeek[weekNumber] || [];
+    let weekMatches = matchesByWeek[weekNumber] || [];
+
+    // NUEVO: Ordenar partidos de la semana por el número de grupo
+    weekMatches.sort((a, b) => a.group - b.group);
 
     if (weekMatches.length === 0) {
       const noMatchesMsg = document.createElement("div");
@@ -376,6 +438,11 @@ function displayMatches(players, partidos, torneos) {
         player2Span.className = "player-name";
         player2Span.textContent = getPlayerNameById(match.player2, players);
 
+        // NUEVO: limpiar siempre las clases para evitar que queden colores antiguos
+        matchCard.classList.remove("match-completed");
+        player1Span.classList.remove("player-winner", "player-loser");
+        player2Span.classList.remove("player-winner", "player-loser");
+
         // Marcar ganador si existe
         if (match.ganador) {
           matchCard.classList.add("match-completed");
@@ -393,14 +460,6 @@ function displayMatches(players, partidos, torneos) {
         matchPlayers.appendChild(vsSpan);
         matchPlayers.appendChild(player2Span);
 
-        const idBadge = document.createElement("div");
-        idBadge.className = "match-id-badge";
-        idBadge.textContent = `#${match.partidoId}`;
-        idBadge.style.fontSize = "0.7rem";
-        idBadge.style.color = "#999";
-        idBadge.style.textAlign = "right";
-        idBadge.style.marginTop = "5px";
-
         matchCard.appendChild(groupLabel);
 
         if (match.resultado) {
@@ -411,12 +470,261 @@ function displayMatches(players, partidos, torneos) {
         }
 
         matchCard.appendChild(matchPlayers);
+
+        const resultButton = document.createElement("button");
+
+        // Agregar botón solo para partidos sin resultado
+        if (!match.resultado) {
+          resultButton.className = "result-button";
+          resultButton.style.marginTop = "10px";
+          resultButton.style.width = "100%";
+          resultButton.style.padding = "5px";
+          resultButton.style.backgroundColor = "#5bc0de";
+          resultButton.style.color = "white";
+          resultButton.style.border = "none";
+          resultButton.style.borderRadius = "4px";
+          resultButton.style.cursor = "pointer";
+          resultButton.textContent = "Agregar resultado";
+
+          // Evitar que el clic en el botón active el clic de la tarjeta
+          resultButton.addEventListener("click", function (event) {
+            event.stopPropagation();
+            const player1Name = getPlayerNameById(match.player1, players);
+            const player2Name = getPlayerNameById(match.player2, players);
+
+            Swal.fire({
+              title: "Agregar resultado",
+              html: `
+                <p><strong>Partido #${match.partidoId}</strong></p>
+                <p>${player1Name} vs ${player2Name}</p>
+                <p>Grupo ${match.group} - Semana ${weekNumber}</p>
+                <div class="set-form" style="margin-top: 15px; background-color: #333; color: white; border-radius: 5px; overflow: hidden;">
+                  <div style="display: flex; padding: 10px; background-color: #222;">
+                    <div style="flex: 0.5; font-weight: bold;">Participante</div>
+                    <div style="flex: 1; font-weight: bold; text-align: center;">Resultado</div>
+                    <div style="width: 80px; font-weight: bold; text-align: center;">Ganador</div>
+                  </div>
+                  
+                  <!-- Primera fila - Jugador 1 -->
+                  <div style="display: flex; padding: 10px; border-bottom: 1px solid #444;">
+                    <div style="flex: 0.5;">${player1Name}</div>
+                    <div id="player1-results" style="display: flex; flex: 1;">
+                      <div style="flex: 1; text-align: center;">
+                        <input type="number" id="player1-score-1" min="0" max="7" maxlength="1" oninput="this.value = this.value > 7 ? 7 : Math.abs(this.value).toString().slice(0,1)" style="width: 60px; text-align: center; background-color: #444; color: white; border: none; padding: 5px;">
+                      </div>
+                    </div>
+                    <div style="width: 80px; text-align: center;">
+                      <input type="radio" name="ganador" id="ganador-player1" value="${match.player1}">
+                    </div>
+                  </div>
+                  
+                  <!-- Segunda fila - Jugador 2 -->
+                  <div style="display: flex; padding: 10px;">
+                    <div style="flex: 0.5;">${player2Name}</div>
+                    <div id="player2-results" style="display: flex; flex: 1;">
+                      <div style="flex: 1; text-align: center;">
+                        <input type="number" id="player2-score-1" min="0" max="7" maxlength="1" oninput="this.value = this.value > 7 ? 7 : Math.abs(this.value).toString().slice(0,1)" style="width: 60px; text-align: center; background-color: #444; color: white; border: none; padding: 5px;">
+                      </div>
+                    </div>
+                    <div style="width: 80px; text-align: center;">
+                      <input type="radio" name="ganador" id="ganador-player2" value="${match.player2}">
+                    </div>
+                  </div>
+                </div>
+                <div style="text-align: right; margin-top: 10px;">
+                  <button id="add-set-btn" style="background-color: #FF6B35; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">ADICIONAR UN SET</button>
+                </div>
+              `,
+              icon: "info",
+              showCancelButton: true,
+              confirmButtonText: "Guardar",
+              cancelButtonText: "Cancelar",
+              didOpen: () => {
+                // Agregar funcionalidad al botón "ADICIONAR UN SET"
+                document
+                  .getElementById("add-set-btn")
+                  .addEventListener("click", function () {
+                    // Contar el número actual de columnas de resultado
+                    const resultsContainer =
+                      document.getElementById("player1-results");
+                    const setCount =
+                      resultsContainer.querySelectorAll("div").length + 1;
+
+                    if (setCount <= 3) {
+                      // Limitamos a 3 sets como máximo
+                      // Agregar nueva columna para el jugador 1
+                      const player1Col = document.createElement("div");
+                      player1Col.style = "flex: 1; text-align: center;";
+                      player1Col.innerHTML = `<input type="number" id="player1-score-${setCount}" min="0" max="7" maxlength="1" oninput="this.value = this.value > 7 ? 7 : Math.abs(this.value).toString().slice(0,1)" style="width: 60px; text-align: center; background-color: #444; color: white; border: none; padding: 5px;">`;
+                      document
+                        .getElementById("player1-results")
+                        .appendChild(player1Col);
+
+                      // Agregar nueva columna para el jugador 2
+                      const player2Col = document.createElement("div");
+                      player2Col.style = "flex: 1; text-align: center;";
+                      player2Col.innerHTML = `<input type="number" id="player2-score-${setCount}" min="0" max="7" maxlength="1" oninput="this.value = this.value > 7 ? 7 : Math.abs(this.value).toString().slice(0,1)" style="width: 60px; text-align: center; background-color: #444; color: white; border: none; padding: 5px;">`;
+                      document
+                        .getElementById("player2-results")
+                        .appendChild(player2Col);
+                    }
+
+                    // Si alcanzamos el límite de sets, deshabilitamos el botón
+                    if (setCount >= 3) {
+                      document.getElementById("add-set-btn").disabled = true;
+                      document.getElementById("add-set-btn").style.opacity =
+                        "0.5";
+                    }
+                  });
+              },
+            }).then((result) => {
+              if (result.isConfirmed) {
+                // Recopilar los resultados de todos los sets
+                const setResults = [];
+                const setCount = document.querySelectorAll(
+                  "#player1-results > div"
+                ).length;
+
+                let totalSetsPlayer1 = 0;
+                let totalSetsPlayer2 = 0;
+
+                for (let i = 1; i <= setCount; i++) {
+                  const player1Score =
+                    document.getElementById(`player1-score-${i}`).value || 0;
+                  const player2Score =
+                    document.getElementById(`player2-score-${i}`).value || 0;
+
+                  if (player1Score !== "" || player2Score !== "") {
+                    setResults.push(`${player1Score}-${player2Score}`);
+
+                    // Determinar ganador del set
+                    if (parseInt(player1Score) > parseInt(player2Score)) {
+                      totalSetsPlayer1++;
+                    } else if (
+                      parseInt(player2Score) > parseInt(player1Score)
+                    ) {
+                      totalSetsPlayer2++;
+                    }
+                  }
+                }
+
+                // Obtener el ganador seleccionado por el usuario
+                let ganadorId = null;
+                const ganadorPlayer1 =
+                  document.getElementById("ganador-player1");
+                const ganadorPlayer2 =
+                  document.getElementById("ganador-player2");
+
+                if (ganadorPlayer1 && ganadorPlayer1.checked) {
+                  ganadorId = match.player1;
+                } else if (ganadorPlayer2 && ganadorPlayer2.checked) {
+                  ganadorId = match.player2;
+                } else {
+                  // Si no hay selección, determinar ganador automáticamente
+                  if (totalSetsPlayer1 > totalSetsPlayer2) {
+                    ganadorId = match.player1;
+                  } else if (totalSetsPlayer2 > totalSetsPlayer1) {
+                    ganadorId = match.player2;
+                  }
+                }
+
+                // Formatear el resultado final (ej: 6-1/6-2/7-6)
+                const resultadoFinal = setResults.join("/");
+
+                // Llamar a la función para actualizar el resultado en la base de datos
+                updatePartidoResultado(
+                  match.partidoId,
+                  resultadoFinal,
+                  ganadorId
+                ).then((exitoso) => {
+                  if (exitoso) {
+                    Swal.fire({
+                      title: "Éxito",
+                      text: "El resultado ha sido guardado correctamente.",
+                      icon: "success",
+                      confirmButtonText: "OK",
+                    }).then(() => {
+                      // Recargar los datos después de guardar
+                      loadAndDisplayData();
+                    });
+                  } else {
+                    Swal.fire({
+                      title: "Error",
+                      text: "Hubo un problema al guardar el resultado. Por favor, inténtalo de nuevo.",
+                      icon: "error",
+                      confirmButtonText: "OK",
+                    });
+                  }
+                });
+              }
+            });
+          });
+        } else {
+          // El partido ya tiene resultado => mostrar botón para eliminar el resultado
+          resultButton.className = "result-button";
+          resultButton.style.marginTop = "10px";
+          resultButton.style.width = "100%";
+          resultButton.style.padding = "5px";
+          resultButton.style.backgroundColor = "#FF6B35";
+          resultButton.style.color = "white";
+          resultButton.style.border = "none";
+          resultButton.style.borderRadius = "4px";
+          resultButton.style.cursor = "pointer";
+          resultButton.textContent = "Eliminar resultado";
+
+          // Evento para eliminar el resultado
+          resultButton.addEventListener("click", function (event) {
+            event.stopPropagation();
+
+            Swal.fire({
+              title: "Confirmar eliminación",
+              text: `¿Estás seguro de que deseas eliminar el resultado del partido #${match.partidoId}?`,
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonText: "Sí, eliminar",
+              cancelButtonText: "Cancelar",
+            }).then((result) => {
+              if (result.isConfirmed) {
+                // Llamar a la función para eliminar el resultado
+                deleteResultadoById(match.partidoId).then((exitoso) => {
+                  if (exitoso) {
+                    Swal.fire({
+                      title: "Éxito",
+                      text: "El resultado ha sido eliminado correctamente.",
+                      icon: "success",
+                      confirmButtonText: "OK",
+                    }).then(() => {
+                      // Recargar los datos después de eliminar
+                      loadAndDisplayData();
+                    });
+                  } else {
+                    Swal.fire({
+                      title: "Error",
+                      text: "Hubo un problema al eliminar el resultado. Por favor, inténtalo de nuevo.",
+                      icon: "error",
+                      confirmButtonText: "OK",
+                    });
+                  }
+                });
+              }
+            });
+          });
+        }
+
+        matchCard.appendChild(resultButton);
+
+        const idBadge = document.createElement("div");
+        idBadge.className = "match-id-badge";
+        idBadge.textContent = `#${match.partidoId}`;
+        idBadge.style.fontSize = "0.7rem";
+        idBadge.style.color = "#999";
+        idBadge.style.textAlign = "right";
+        idBadge.style.marginTop = "5px";
+
         matchCard.appendChild(idBadge);
         matchesGrid.appendChild(matchCard);
 
-        // matchCard.addEventListener("click", function () {
-        //   console.log(`Partido #${match.partidoId} seleccionado`);
-        // });
+        // Al hacer clic en la tarjeta (no en el botón) se muestra la información del partido
         matchCard.addEventListener("click", function () {
           const player1Name = getPlayerNameById(match.player1, players);
           const player2Name = getPlayerNameById(match.player2, players);
