@@ -67,7 +67,7 @@ async function getTorneos() {
 async function getPartidos() {
   try {
     const responsePartidos = await fetch(
-      `${SUPABASE_URL}/rest/v1/Partidos_duplicate_test?select=*`,
+      `${SUPABASE_URL}/rest/v1/Partidos?select=*`,
       {
         method: "GET",
         headers: {
@@ -96,7 +96,7 @@ async function getPartidos() {
 async function updatePartidoResultado(partidoId, nuevoResultado, ganadorId) {
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/Partidos_duplicate_test?id=eq.${partidoId}`,
+      `${SUPABASE_URL}/rest/v1/Partidos?id=eq.${partidoId}`,
       {
         method: "PATCH",
         headers: {

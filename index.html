@@ -9,6 +9,9 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.3/sweetalert2.min.css" />
     <title>Torneo de Tenis</title>
     <style>
+      /* =========================================================
+   Estilos originales (No se han modificado)
+   ========================================================= */
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         background: linear-gradient(120deg, #e0f7fa, #ffffff);
@@ -210,6 +213,136 @@
         background-color: #f9f2f2;
         border-left: 4px solid #d9534f;
         margin: 10px 0;
+      }
+
+      /* =========================================================
+   NUEVOS ESTILOS PARA EL SCOREBOARD/MARCADORES
+   (Clases diferenciadas para evitar conflictos)
+   ========================================================= */
+
+      /* Contenedor principal del scoreboard */
+      .scoreboard-container {
+        margin-top: 15px;
+        background-color: #333;
+        color: #fff;
+        border-radius: 5px;
+        overflow: hidden;
+        padding: 15px;
+      }
+
+      /* Encabezado del scoreboard (titulares de columnas) */
+      .scoreboard-header {
+        display: flex;
+        background-color: #222;
+        padding: 10px;
+        font-weight: bold;
+        border-bottom: 1px solid #444;
+      }
+
+      .scoreboard-header > div {
+        flex: 1;
+        text-align: center;
+      }
+
+      /* Fila de cada jugador (jugador, input de marcador y radio ganador) */
+      .scoreboard-row {
+        display: flex;
+        padding: 10px;
+        border-bottom: 1px solid #444;
+        align-items: center;
+      }
+
+      .scoreboard-row:last-child {
+        border-bottom: none;
+      }
+
+      .scoreboard-player-name {
+        flex: 1;
+      }
+
+      .scoreboard-player-result {
+        flex: 1;
+        text-align: center;
+      }
+
+      /* Input de puntaje */
+      .scoreboard-input {
+        width: 60px;
+        text-align: center;
+        background-color: #444;
+        color: #fff;
+        border: none;
+        padding: 5px;
+        border-radius: 3px;
+      }
+
+      /* Radio button para el ganador */
+      .scoreboard-radio {
+        width: 80px;
+        text-align: center;
+      }
+
+      /* Botón para añadir set */
+      .scoreboard-addset-container {
+        text-align: right;
+        margin-top: 10px;
+      }
+
+      .scoreboard-addset-btn {
+        background-color: #ff6b35;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+
+      /* Media query para pantallas pequeñas */
+      @media (max-width: 480px) {
+        #player1-score-1,
+        #player2-score-1,
+        #player1-score-2,
+        #player2-score-2,
+        #player1-score-3,
+        #player2-score-3 {
+          width: 35px !important;
+        }
+
+        .scoreboard-container {
+          padding: 10px;
+        }
+
+        .scoreboard-header,
+        .scoreboard-row {
+          display: block; /* Para apilar los elementos */
+        }
+
+        .scoreboard-header > div {
+          width: 100%;
+          text-align: left;
+          margin-bottom: 5px;
+        }
+
+        .scoreboard-row > div {
+          width: 100%;
+          margin-bottom: 5px;
+          text-align: left;
+        }
+
+        .scoreboard-player-result {
+          margin-bottom: 0;
+        }
+
+        .scoreboard-input {
+          width: 100%;
+          max-width: 80px; /* Ajustar según tu preferencia */
+        }
+
+        .scoreboard-radio {
+          width: 100%;
+          text-align: left;
+          margin-top: 5px;
+        }
       }
     </style>
   </head>
