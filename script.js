@@ -125,7 +125,7 @@ async function updatePartidoResultado(partidoId, nuevoResultado, ganadorId) {
 async function deleteResultadoById(partidoId) {
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/Partidos_duplicate_test?id=eq.${partidoId}`,
+      `${SUPABASE_URL}/rest/v1/Partidos?id=eq.${partidoId}`,
       {
         method: "PATCH",
         headers: {
