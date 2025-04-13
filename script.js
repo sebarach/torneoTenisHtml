@@ -28,33 +28,33 @@ async function getPlayers() {
 }
 
 // Función para obtener los torneos desde Supabase
-async function getTorneos() {
-  try {
-    const responseTorneo = await fetch(
-      `${SUPABASE_URL}/rest/v1/Torneo?select=*`,
-      {
-        method: "GET",
-        headers: {
-          apikey: ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_CLIENT_ANON_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+// async function getTorneos() {
+//   try {
+//     const responseTorneo = await fetch(
+//       `${SUPABASE_URL}/rest/v1/Torneo?select=*`,
+//       {
+//         method: "GET",
+//         headers: {
+//           apikey: ANON_KEY,
+//           Authorization: `Bearer ${SUPABASE_CLIENT_ANON_KEY}`,
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
 
-    if (!responseTorneo.ok) {
-      throw new Error(`Error HTTP: ${responseTorneo.status}`);
-    }
+//     if (!responseTorneo.ok) {
+//       throw new Error(`Error HTTP: ${responseTorneo.status}`);
+//     }
 
-    const data = await responseTorneo.json();
-    console.log("Datos de torneos recibidos:", data);
+//     const data = await responseTorneo.json();
+//     console.log("Datos de torneos recibidos:", data);
 
-    return data;
-  } catch (error) {
-    console.error("Error al obtener los torneos:", error);
-    return [];
-  }
-}
+//     return data;
+//   } catch (error) {
+//     console.error("Error al obtener los torneos:", error);
+//     return [];
+//   }
+// }
 
 // Función para obtener los partidos desde Supabase
 async function getPartidos() {
@@ -767,7 +767,7 @@ async function loadAndDisplayData() {
 
     // Cargar datos
     const players = await getPlayers();
-    const torneos = await getTorneos();
+    // const torneos = await getTorneos();
     const partidos = await getPartidos();
 
     // Ocultar indicadores de carga
@@ -783,7 +783,7 @@ async function loadAndDisplayData() {
 
     return {
       players,
-      torneos,
+      // torneos,
       partidos,
     };
   } catch (error) {
