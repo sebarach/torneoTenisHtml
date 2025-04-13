@@ -1,20 +1,13 @@
-const SUPABASE_CLIENT_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11amFyb2l2YXBxa29mZ2hjdmNxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0Mzg4MzgyNiwiZXhwIjoyMDU5NDU5ODI2fQ.Ux640A_yGkFd2zXDLGkyliDlE9Kgd2otAGKE22fqlTs";
-
 const SUPABASE_URL = "https://mujaroivapqkofghcvcq.supabase.co";
-const ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11amFyb2l2YXBxa29mZ2hjdmNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM4ODM4MjYsImV4cCI6MjA1OTQ1OTgyNn0.-m1mMV0ehAJO3saN0wSwtMzZElkE-iOLpy6tvMLvc5E";
 
 // Función para obtener los jugadores desde Supabase
 async function getPlayers() {
   try {
     const responsePlayer = await fetch(
-      `${SUPABASE_URL}/rest/v1/Players?select=*`,
+      `${SUPABASE_URL}/functions/v1/GetJugadores`,
       {
         method: "GET",
         headers: {
-          apikey: ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_CLIENT_ANON_KEY}`,
           "Content-Type": "application/json",
         },
       }
@@ -67,12 +60,10 @@ async function getTorneos() {
 async function getPartidos() {
   try {
     const responsePartidos = await fetch(
-      `${SUPABASE_URL}/rest/v1/Partidos?select=*`,
+      `${SUPABASE_URL}/functions/v1/GetPartidos`,
       {
-        method: "GET",
+        method: "POST",
         headers: {
-          apikey: ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_CLIENT_ANON_KEY}`,
           "Content-Type": "application/json",
         },
       }
@@ -92,60 +83,63 @@ async function getPartidos() {
   }
 }
 
-// Función para actualizar el resultado de un partido en Supabase _duplicate_test
-async function updatePartidoResultado(partidoId, nuevoResultado, ganadorId) {
+// Función para actualizar el resultado de un partido usando la Edge Function
+async function updatePartidoResultado(partidoId, resultadoFinal, ganadorId) {
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/Partidos?id=eq.${partidoId}`,
+      `${SUPABASE_URL}/functions/v1/ActualizarPartido`,
       {
         method: "PATCH",
         headers: {
-          apikey: ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_CLIENT_ANON_KEY}`,
           "Content-Type": "application/json",
-          Prefer: "return=minimal",
         },
         body: JSON.stringify({
-          Resultado: nuevoResultado,
+          id: partidoId,
+          Resultado: resultadoFinal,
           PlayerGanador: ganadorId,
         }),
       }
     );
 
     if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(
+        `Error: ${response.status} - ${errorData.error || "Error desconocido"}`
+      );
     }
+    const data = await response.json();
+    console.log("Partido actualizado:", data);
     return true;
   } catch (error) {
+    console.error("Error al actualizar partido:", error);
     return false;
   }
 }
 
-// Función para actualizar el resultado de un partido en Supabase _duplicate_test
+// Función para eliminar lógicamente el resultado de un partido
 async function deleteResultadoById(partidoId) {
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/Partidos?id=eq.${partidoId}`,
+      `${SUPABASE_URL}/functions/v1/EliminarLogicoPartido?id=${partidoId}`,
       {
         method: "PATCH",
         headers: {
-          apikey: ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_CLIENT_ANON_KEY}`,
           "Content-Type": "application/json",
-          Prefer: "return=minimal",
         },
-        body: JSON.stringify({
-          Resultado: null,
-          PlayerGanador: 0,
-        }),
       }
     );
 
     if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
+      const errorData = await response.json();
+      console.error("Error al eliminar resultado:", errorData);
+      throw new Error(
+        `Error: ${response.status} - ${errorData.error || "Error desconocido"}`
+      );
     }
+
     return true;
   } catch (error) {
+    console.error("Error completo:", error);
     return false;
   }
 }
