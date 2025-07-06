@@ -149,7 +149,7 @@ function groupPlayersByGroup(players, partidos, torneos) {
   // Obtener la información del torneo activo (asumiendo que es el primero si hay varios)
   const torneoActivo = torneos && torneos.length > 0 ? torneos[0] : null;
   const numeroGrupos =
-    torneoActivo && torneoActivo.NumeroGrupos ? torneoActivo.NumeroGrupos : 5;
+    torneoActivo && torneoActivo.NumeroGrupos ? torneoActivo.NumeroGrupos : 8;
 
   // Crear un mapa de jugador a grupo basado en los partidos
   const playerToGroup = {};
@@ -363,7 +363,7 @@ function displayPlayerGroups(players, partidos, torneos) {
 // Función para mostrar los partidos por semana
 function displayMatches(players, partidos, torneos) {
   const torneoActivo = torneos && torneos.length > 0 ? torneos[0] : null;
-  const cantidadFechas = torneoActivo?.CantidadFechas || 5;
+  const cantidadFechas = torneoActivo?.CantidadFechas || 1;
 
   const matchesByWeek = organizeMatchesByWeek(partidos);
 
@@ -386,7 +386,7 @@ function displayMatches(players, partidos, torneos) {
 
     const weekHeader = document.createElement("div");
     weekHeader.className = "week-header";
-    weekHeader.textContent = `Semana ${weekNumber}`;
+    weekHeader.textContent = `Calendario`; //${weekNumber}
 
     const matchesGrid = document.createElement("div");
     matchesGrid.className = "matches-grid";
